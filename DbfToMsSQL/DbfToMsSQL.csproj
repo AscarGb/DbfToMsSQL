@@ -88,12 +88,6 @@
       <DependentUpon>CreateTable.cs</DependentUpon>
     </Compile>
     <Compile Include="DBFBulkReader.cs" />
-    <Compile Include="EnterKey.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="EnterKey.Designer.cs">
-      <DependentUpon>EnterKey.cs</DependentUpon>
-    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -110,9 +104,6 @@
     </Compile>
     <EmbeddedResource Include="CreateTable.resx">
       <DependentUpon>CreateTable.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="EnterKey.resx">
-      <DependentUpon>EnterKey.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
