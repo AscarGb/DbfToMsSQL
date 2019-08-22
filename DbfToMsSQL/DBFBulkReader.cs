@@ -13,6 +13,8 @@ namespace BdfToMsSQL
         public string FileName = "";
         private int StepFormUpdate = 0;
         private MainForm Form;
+        public string TableName;
+
         private delegate void FormMethod(int a);
         private delegate void FormMessage();
 
@@ -100,12 +102,15 @@ namespace BdfToMsSQL
             return true;
         }
         public object GetValue(int i) { return FieldValues[FieldIndex[i]]; }
-        public DBFReader(string fileName, Dictionary<int, string> FieldIndex, MainForm form, int encoding)
+        public DBFReader(string fileName, Dictionary<int, string> FieldIndex, MainForm form, int encoding, string tableName)
         {
             try
             {
                 _encoding = Encoding.GetEncoding(encoding);
+
                 FileName = fileName;
+                TableName = tableName;
+
                 Form = form;
 
                 FS = new FileStream(fileName, System.IO.FileMode.Open);

@@ -46,6 +46,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.SQLServerAdressTextBox = new System.Windows.Forms.TextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.EncodingComboBox = new System.Windows.Forms.ComboBox();
+            this.label9 = new System.Windows.Forms.Label();
             this.CreateSQLTableButton = new System.Windows.Forms.Button();
             this.RemoveTaskButton = new System.Windows.Forms.Button();
             this.ValidationLabel = new System.Windows.Forms.Label();
@@ -56,8 +58,6 @@
             this.BbfFieldsLabel = new System.Windows.Forms.ListBox();
             this.OpenDbfButton = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.label9 = new System.Windows.Forms.Label();
-            this.EncodingComboBox = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -248,6 +248,27 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "DBF parameters";
             // 
+            // EncodingComboBox
+            // 
+            this.EncodingComboBox.FormattingEnabled = true;
+            this.EncodingComboBox.Items.AddRange(new object[] {
+            "1251",
+            "866"});
+            this.EncodingComboBox.Location = new System.Drawing.Point(76, 217);
+            this.EncodingComboBox.Name = "EncodingComboBox";
+            this.EncodingComboBox.Size = new System.Drawing.Size(121, 21);
+            this.EncodingComboBox.TabIndex = 32;
+            this.EncodingComboBox.Text = "1251";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(18, 220);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(52, 13);
+            this.label9.TabIndex = 31;
+            this.label9.Text = "Encoding";
+            // 
             // CreateSQLTableButton
             // 
             this.CreateSQLTableButton.Enabled = false;
@@ -291,6 +312,7 @@
             this.DbfFilesListBox.Name = "DbfFilesListBox";
             this.DbfFilesListBox.Size = new System.Drawing.Size(298, 67);
             this.DbfFilesListBox.TabIndex = 27;
+            this.DbfFilesListBox.SelectedIndexChanged += new System.EventHandler(this.DbfFilesListBox_SelectedIndexChanged);
             // 
             // DbfCountLabel
             // 
@@ -328,7 +350,7 @@
             this.BbfFieldsLabel.Location = new System.Drawing.Point(169, 113);
             this.BbfFieldsLabel.Name = "BbfFieldsLabel";
             this.BbfFieldsLabel.Size = new System.Drawing.Size(298, 67);
-            this.BbfFieldsLabel.TabIndex = 21;
+            this.BbfFieldsLabel.TabIndex = 21;           
             // 
             // OpenDbfButton
             // 
@@ -344,27 +366,6 @@
             // openFileDialog1
             // 
             this.openFileDialog1.Multiselect = true;
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(18, 220);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(52, 13);
-            this.label9.TabIndex = 31;
-            this.label9.Text = "Encoding";
-            // 
-            // EncodingComboBox
-            // 
-            this.EncodingComboBox.FormattingEnabled = true;
-            this.EncodingComboBox.Items.AddRange(new object[] {
-            "1251",
-            "866"});
-            this.EncodingComboBox.Location = new System.Drawing.Point(76, 217);
-            this.EncodingComboBox.Name = "EncodingComboBox";
-            this.EncodingComboBox.Size = new System.Drawing.Size(121, 21);
-            this.EncodingComboBox.TabIndex = 32;
-            this.EncodingComboBox.Text = "1251";
             // 
             // DbTaskUserControl
             // 

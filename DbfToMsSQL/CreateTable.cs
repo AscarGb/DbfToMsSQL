@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -15,12 +16,15 @@ namespace BdfToMsSQL
         public CreateTable(DbTaskUserControl control)
         {
             this.control = control;
-            InitializeComponent();
-            s.Append($"use {control.DbNameTextBox.Text + Environment.NewLine}CREATE TABLE [dbo].[{Path.GetFileNameWithoutExtension(control.Readers[0].FileName)}] ({Environment.NewLine}");
+            InitializeComponent();  
 
-            listItem = Path.GetFileNameWithoutExtension(control.Readers[0].FileName);
+            DBFReader r = control.Readers
+                .FirstOrDefault(a => StringComparer.Ordinal.Equals(a.TableName, control.SelectedDbfTable.Split('(').First().Trim() ))
+                ?? control.Readers[0];
 
-            DBFReader r = control.Readers[0];
+            s.Append($"use {control.DbNameTextBox.Text + Environment.NewLine}CREATE TABLE [dbo].[{Path.GetFileNameWithoutExtension(r.FileName)}] ({Environment.NewLine}");
+
+            listItem = Path.GetFileNameWithoutExtension(r.FileName);
 
             for (int i = 0; i < r.FieldCount; i++)
             {

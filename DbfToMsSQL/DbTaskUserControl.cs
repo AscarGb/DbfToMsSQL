@@ -18,6 +18,7 @@ namespace BdfToMsSQL
         public bool SqlSelectedTab = false;
         public string ConnestionString = "";
         public List<DBFReader> Readers;
+        public string SelectedDbfTable = "";
 
         private bool _sqlConnect = false;
         private bool _dbfOpen = false;
@@ -36,7 +37,10 @@ namespace BdfToMsSQL
             set
             {
                 _sqlConnect = value;
-                CreateSQLTableButton.Enabled = _dbfOpen && _sqlConnect;
+                Invoke(() =>
+                {
+                    CreateSQLTableButton.Enabled = _dbfOpen && _sqlConnect;
+                });
             }
         }
 
@@ -46,7 +50,10 @@ namespace BdfToMsSQL
             set
             {
                 _dbfOpen = value;
-                CreateSQLTableButton.Enabled = _dbfOpen && _sqlConnect;
+                Invoke(() =>
+                {
+                    CreateSQLTableButton.Enabled = _dbfOpen && _sqlConnect;
+                });
             }
         }
 
@@ -235,13 +242,15 @@ namespace BdfToMsSQL
 
                     fileList.ToList().ForEach(f =>
                     {
-                        DBFReader bulkReader = new DBFReader(f, FieldIndex, _form, int.Parse(EncodingComboBox.Text));
+                        string fileName = Path.GetFileName(f);
+
+                        DBFReader bulkReader = new DBFReader(f, FieldIndex, _form, int.Parse(EncodingComboBox.Text), fileName);
                         Readers.Add(bulkReader);
 
                         last_open_dir = Path.GetDirectoryName(f);
                         Invoke(() =>
                         {
-                            DbfFilesListBox.Items.Add($"{Path.GetFileName(f)} ( Fields count:{bulkReader.FieldName.Count()} Rows count: {bulkReader.RowsCount} )");
+                            DbfFilesListBox.Items.Add($"{fileName} ( Fields count:{bulkReader.FieldName.Count()} Rows count: {bulkReader.RowsCount} )");
                         });
 
                         try
@@ -284,29 +293,7 @@ namespace BdfToMsSQL
 
                     RecalculateRowCount();
 
-                    if (Readers.Count() > 0)
-                    {
-                        Invoke(() =>
-                        {
-                            BbfFieldsLabel.Items.Clear();
-                        });
-
-                        RowsCnt = Readers.Sum(a => a.RowsCount);
-
-                        Invoke(() =>
-                        {
-                            DbfCountLabel.Text = RowsCnt.ToString();
-                        });
-
-                        for (int i = 0; i < Readers[0].FieldCount; i++)
-                        {
-                            string fieldName = Readers[0].FieldName[i];
-                            Invoke(() =>
-                            {
-                                BbfFieldsLabel.Items.Add(fieldName);
-                            });
-                        }
-                    }
+                    ShowDbfTableFields();
 
                     if (SqlConnect && SqlSelectedTab)
                     {
@@ -340,6 +327,31 @@ namespace BdfToMsSQL
                 Invoke(() =>
                 {
                     OpenDbfButton.Enabled = true;
+                });
+            }
+        }
+
+
+        void ShowDbfTableFields()
+        {
+            if (Readers.Count() > 0)
+            {
+                Invoke(() =>
+                {
+                    BbfFieldsLabel.Items.Clear();
+                    RowsCnt = Readers.Sum(a => a.RowsCount);
+                    DbfCountLabel.Text = RowsCnt.ToString();
+
+                    DBFReader r = Readers
+                        .FirstOrDefault(a => StringComparer.Ordinal.Equals(a.TableName, SelectedDbfTable.Split('(').First().Trim()))
+                        ?? Readers[0];
+
+                    for (int i = 0; i < r.FieldCount; i++)
+                    {
+                        string fieldName = r.FieldName[i];
+
+                        BbfFieldsLabel.Items.Add(fieldName);
+                    }
                 });
             }
         }
@@ -460,13 +472,19 @@ namespace BdfToMsSQL
 
             if (!isErrors)
             {
-                ValidationLabel.Text = "Validation passed.";
-                ValidationLabel.ForeColor = Color.Green;
+                Invoke(() =>
+                {
+                    ValidationLabel.Text = "Validation passed.";
+                    ValidationLabel.ForeColor = Color.Green;
+                });
             }
             else
             {
-                ValidationLabel.Text = "Field do not coincide!";
-                ValidationLabel.ForeColor = Color.Red;
+                Invoke(() =>
+                {
+                    ValidationLabel.Text = "Field do not coincide!";
+                    ValidationLabel.ForeColor = Color.Red;
+                });
             }
 
             return isErrors;
@@ -479,6 +497,12 @@ namespace BdfToMsSQL
                 StartPosition = FormStartPosition.CenterParent
             };
             t.ShowDialog();
+        }
+
+        private void DbfFilesListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedDbfTable = DbfFilesListBox.Text;
+            ShowDbfTableFields();
         }
     }
 }
