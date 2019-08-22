@@ -137,6 +137,8 @@ namespace BdfToMsSQL
                         return;
                     }
 
+                    string item = (string)Invoke(new MethodInvokerString(() => { return TablesListbox.SelectedItem.ToString(); }));
+
                     using (SqlConnection connection = new SqlConnection(ConnestionString))
                     {
                         using (SqlCommand sqlCommand = new SqlCommand("", connection)
@@ -147,7 +149,7 @@ namespace BdfToMsSQL
                                        FROM SYS .OBJECTS AS T
                                        JOIN SYS .COLUMNS AS C
                                        ON T. OBJECT_ID=C .OBJECT_ID
-                                       WHERE t.type = 'U' and T.name = '{TablesListbox.SelectedItem.ToString()}'"
+                                       WHERE t.type = 'U' and T.name = '{item}'"
                         })
                         {
                             connection.Open();
