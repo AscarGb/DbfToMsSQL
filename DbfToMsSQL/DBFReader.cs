@@ -10,46 +10,46 @@ namespace BdfToMsSQL
 {
     public class DBFReader : IDataReader
     {
-        public string FileName = "";
-        private int StepFormUpdate = 0;
-        private MainForm Form;
-        public string TableName;
+        public string FileName { get; set; } = "";
+        public string TableName { get; set; }
+        public string[] FieldName { get; set; }
+        public string[] FieldType { get; set; }
+        public byte[] FieldSize { get; set; }
+        public byte[] FieldDigs { get; set; }
+        public int RowsCount { get; set; }
+        public int FieldCount { get; }
 
         private delegate void FormMethod(int a);
         private delegate void FormMessage();
 
+        private int _stepFormUpdate = 0;
+        private MainForm _form;
         private Encoding _encoding;
-        private FileStream FS;
-        private byte[] buffer;
-        private readonly int FieldsLength;
-        private readonly DateTimeFormatInfo dateTimeFormat = new CultureInfo("en-US", false).DateTimeFormat;
-        private readonly NumberFormatInfo numberFormat = new CultureInfo("en-US", false).NumberFormat;
-        public string[] FieldName;
-        public string[] FieldType;
-        public byte[] FieldSize;
-        public byte[] FieldDigs;
-        public int RowsCount;
-        private int ReadedRow = 0;
-        private Dictionary<string, object> FieldValues = new Dictionary<string, object>();
-        private readonly Dictionary<int, string> FieldIndex = new Dictionary<int, string>();
+        private FileStream _fileStream;
+        private byte[] _buffer;
+        private readonly int _fieldsLength;
+        private readonly DateTimeFormatInfo _dateTimeFormat = new CultureInfo("en-US", false).DateTimeFormat;
+        private readonly NumberFormatInfo _numberFormat = new CultureInfo("en-US", false).NumberFormat;
+        private int _readedRow = 0;
+        private Dictionary<string, object> _fieldValues = new Dictionary<string, object>();
+        private readonly Dictionary<int, string> _fieldIndex = new Dictionary<int, string>();
 
         //implement
-        public int FieldCount { get; }
         public bool Read()
         {
-            if (ReadedRow >= RowsCount)
+            if (_readedRow >= RowsCount)
             {
                 return false;
             }
 
-            FieldValues.Clear();
-            buffer = new byte[FieldsLength];
-            FS.ReadByte(); // Пропускаю стартовый байт элемента данных
-            FS.Read(buffer, 0, buffer.Length);
+            _fieldValues.Clear();
+            _buffer = new byte[_fieldsLength];
+            _fileStream.ReadByte(); // Пропускаю стартовый байт элемента данных
+            _fileStream.Read(_buffer, 0, _buffer.Length);
             int Index = 0;
             for (int i = 0; i < FieldCount; i++)
             {
-                string dbfValue = _encoding.GetString(buffer, Index, FieldSize[i]).TrimEnd((char)0x00, (char)0x20);
+                string dbfValue = _encoding.GetString(_buffer, Index, FieldSize[i]).TrimEnd((char)0x00, (char)0x20);
 
                 Index = Index + FieldSize[i];
                 object value;
@@ -58,21 +58,21 @@ namespace BdfToMsSQL
                     switch (FieldType[i])
                     {
                         case "L": value = dbfValue == "T" ? true : false; break;
-                        case "D": value = DateTime.ParseExact(dbfValue, "yyyyMMdd", dateTimeFormat); break;
+                        case "D": value = DateTime.ParseExact(dbfValue, "yyyyMMdd", _dateTimeFormat); break;
                         case "N":
                             {
                                 if (FieldDigs[i] == 0)
                                 {
-                                    value = int.Parse(dbfValue, numberFormat);
+                                    value = int.Parse(dbfValue, _numberFormat);
                                 }
                                 else
                                 {
-                                    value = decimal.Parse(dbfValue, numberFormat);
+                                    value = decimal.Parse(dbfValue, _numberFormat);
                                 }
 
                                 break;
                             }
-                        case "F": value = double.Parse(dbfValue, numberFormat); break;
+                        case "F": value = double.Parse(dbfValue, _numberFormat); break;
                         default: value = dbfValue; break;
                     }
                 }
@@ -80,18 +80,18 @@ namespace BdfToMsSQL
                 {
                     value = DBNull.Value;
                 }
-                FieldValues.Add(FieldName[i], value);
+                _fieldValues.Add(FieldName[i], value);
             }
 
-            ReadedRow++;
-            StepFormUpdate++;
+            _readedRow++;
+            _stepFormUpdate++;
 
             try
             {
-                if (StepFormUpdate >= 20000 || ReadedRow >= RowsCount)
+                if (_stepFormUpdate >= 20000 || _readedRow >= RowsCount)
                 {
-                    Form.Invoke(new FormMethod(Form.SetStatus), new object[] { StepFormUpdate });
-                    StepFormUpdate = 0;
+                    _form.Invoke(new FormMethod(_form.SetStatus), new object[] { _stepFormUpdate });
+                    _stepFormUpdate = 0;
                 }
             }
             catch (Exception exc)
@@ -101,7 +101,7 @@ namespace BdfToMsSQL
 
             return true;
         }
-        public object GetValue(int i) { return FieldValues[FieldIndex[i]]; }
+        public object GetValue(int i) { return _fieldValues[_fieldIndex[i]]; }
         public DBFReader(string fileName, Dictionary<int, string> FieldIndex, MainForm form, int encoding, string tableName)
         {
             try
@@ -111,38 +111,38 @@ namespace BdfToMsSQL
                 FileName = fileName;
                 TableName = tableName;
 
-                Form = form;
+                _form = form;
 
-                FS = new FileStream(fileName, System.IO.FileMode.Open);
-                buffer = new byte[4]; // Кол-во записей: 4 байтa, начиная с 5-го
-                FS.Position = 4; FS.Read(buffer, 0, buffer.Length);
-                RowsCount = buffer[0] + (buffer[1] * 0x100) + (buffer[2] * 0x10000) + (buffer[3] * 0x1000000);
-                buffer = new byte[2]; // Кол-во полей: 2 байтa, начиная с 9-го
-                FS.Position = 8; FS.Read(buffer, 0, buffer.Length);
-                FieldCount = ((buffer[0] + (buffer[1] * 0x100) - 1) / 32) - 1;
+                _fileStream = new FileStream(fileName, System.IO.FileMode.Open);
+                _buffer = new byte[4]; // Кол-во записей: 4 байтa, начиная с 5-го
+                _fileStream.Position = 4; _fileStream.Read(_buffer, 0, _buffer.Length);
+                RowsCount = _buffer[0] + (_buffer[1] * 0x100) + (_buffer[2] * 0x10000) + (_buffer[3] * 0x1000000);
+                _buffer = new byte[2]; // Кол-во полей: 2 байтa, начиная с 9-го
+                _fileStream.Position = 8; _fileStream.Read(_buffer, 0, _buffer.Length);
+                FieldCount = ((_buffer[0] + (_buffer[1] * 0x100) - 1) / 32) - 1;
                 FieldName = new string[FieldCount]; // Массив названий полей
                 FieldType = new string[FieldCount]; // Массив типов полей
                 FieldSize = new byte[FieldCount]; // Массив размеров полей
                 FieldDigs = new byte[FieldCount]; // Массив размеров дробной части
-                buffer = new byte[32 * FieldCount]; // Описание полей: 32 байтa * кол-во, начиная с 33-го
-                FS.Position = 32; FS.Read(buffer, 0, buffer.Length);
-                FieldsLength = 0;
+                _buffer = new byte[32 * FieldCount]; // Описание полей: 32 байтa * кол-во, начиная с 33-го
+                _fileStream.Position = 32; _fileStream.Read(_buffer, 0, _buffer.Length);
+                _fieldsLength = 0;
                 for (int i = 0; i < FieldCount; i++)
                 {
                     // Заголовки
-                    FieldName[i] = Encoding.Default.GetString(buffer, i * 32, 10).TrimEnd(new char[] { (char)0x00 });
-                    FieldType[i] = "" + (char)buffer[i * 32 + 11];
-                    FieldSize[i] = buffer[i * 32 + 16];
-                    FieldDigs[i] = buffer[i * 32 + 17];
-                    FieldsLength = FieldsLength + FieldSize[i];
+                    FieldName[i] = Encoding.Default.GetString(_buffer, i * 32, 10).TrimEnd(new char[] { (char)0x00 });
+                    FieldType[i] = "" + (char)_buffer[i * 32 + 11];
+                    FieldSize[i] = _buffer[i * 32 + 16];
+                    FieldDigs[i] = _buffer[i * 32 + 17];
+                    _fieldsLength = _fieldsLength + FieldSize[i];
                 }
-                FS.ReadByte(); // Пропускаю разделитель схемы и данных
+                _fileStream.ReadByte(); // Пропускаю разделитель схемы и данных
 
-                this.FieldIndex = FieldIndex;
+                this._fieldIndex = FieldIndex;
             }
             catch (Exception exc)
             {
-                FS?.Dispose();
+                _fileStream?.Dispose();
                 WriteException(exc);
             }
         }
@@ -151,7 +151,7 @@ namespace BdfToMsSQL
         {
             try
             {
-                FS?.Dispose();
+                _fileStream?.Dispose();
             }
             catch (Exception exc)
             {
@@ -161,7 +161,7 @@ namespace BdfToMsSQL
 
         private void WriteException(Exception exc)
         {
-            Form.Invoke(new FormMessage(() => { Form.InfoListBox.Items.Add($"Error: {exc.Message }\r\n{ exc.InnerException?.ToString() ?? ""}"); }));
+            _form.Invoke(new FormMessage(() => { _form.InfoListBox.Items.Add($"Error: {exc.Message }\r\n{ exc.InnerException?.ToString() ?? ""}"); }));
         }
 
         #region not use 

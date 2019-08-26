@@ -89,7 +89,7 @@
     <Compile Include="CreateTable.Designer.cs">
       <DependentUpon>CreateTable.cs</DependentUpon>
     </Compile>
-    <Compile Include="DBFBulkReader.cs" />
+    <Compile Include="DBFReader.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
