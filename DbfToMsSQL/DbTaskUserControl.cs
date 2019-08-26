@@ -13,20 +13,20 @@ namespace BdfToMsSQL
 {
     public partial class DbTaskUserControl : UserControl
     {
-        public int RowsCnt = 0;
-        public int TotalRows = 0;
-        public bool SqlSelectedTab = false;
-        public string ConnestionString = "";
-        public List<DBFReader> Readers;
-        public string SelectedDbfTable = "";
+        public int RowsCnt { get; set; } = 0;
+        public int TotalRows { get; set; } = 0;
+        public bool SqlSelectedTab { get; set; } = false;
+        public string ConnestionString { get; set; } = "";
+        public List<DBFReader> Readers { get; set; }
+        public string SelectedDbfTable { get; set; } = "";
 
         private bool _sqlConnect = false;
         private bool _dbfOpen = false;
         private string last_open_dir = "D:\\";
+
         private delegate string MethodInvokerString();
         private delegate string[] MethodInvokerStringArray();
 
-        private delegate void MethodInvoker();
         private Dictionary<int, string> FieldIndex = new Dictionary<int, string>();
         private ListBox _listBoxValidateErrors;
         private MainForm _form;
@@ -103,7 +103,7 @@ namespace BdfToMsSQL
                                 }
 
                                 SqlConnect = true;
-                                WriteMessage("Now select SQL table");
+                                Logger.WriteMessage("Now select SQL table");
                             }
                         }
                     }
@@ -111,7 +111,7 @@ namespace BdfToMsSQL
                 catch (Exception exc)
                 {
                     SqlConnect = false;
-                    WriteError(exc);
+                    Logger.WriteError(exc);
                 }
                 finally
                 {
@@ -190,7 +190,7 @@ namespace BdfToMsSQL
                 }
                 catch (Exception exc)
                 {
-                    WriteError(exc);
+                    Logger.WriteError(exc);
                     SqlSelectedTab = false;
                 }
                 finally
@@ -265,7 +265,7 @@ namespace BdfToMsSQL
                                     sqlFields.Add(item.ToString());
                                     if (!dbfFields.Contains(item.ToString()))
                                     {
-                                        WriteMessage($"dbf table {f} missing field: {item.ToString()}");
+                                        Logger.WriteMessage($"dbf table {f} missing field: {item.ToString()}");
                                         IsErrors = true;
                                     }
                                 }
@@ -273,7 +273,7 @@ namespace BdfToMsSQL
                                 {
                                     if (!sqlFields.Contains(item))
                                     {
-                                        WriteMessage("SQL Table missing field: " + item);
+                                        Logger.WriteMessage("SQL Table missing field: " + item);
                                         IsErrors = true;
                                     }
                                 });
@@ -286,7 +286,7 @@ namespace BdfToMsSQL
                         }
                         catch (Exception exc)
                         {
-                            WriteError(exc);
+                            Logger.WriteError(exc);
                         }
 
                     });
@@ -319,7 +319,7 @@ namespace BdfToMsSQL
             }
             catch (Exception exc)
             {
-                WriteError(exc);
+                Logger.WriteError(exc);
                 DbfOpen = false;
             }
             finally
@@ -331,8 +331,7 @@ namespace BdfToMsSQL
             }
         }
 
-
-        void ShowDbfTableFields()
+        private void ShowDbfTableFields()
         {
             if (Readers.Count() > 0)
             {
@@ -377,13 +376,13 @@ namespace BdfToMsSQL
                     }
                     catch (Exception exc)
                     {
-                        WriteError(exc);
+                        Logger.WriteError(exc);
                     }
                 });
             }
             else
             {
-                WriteMessage("No connection");
+                Logger.WriteMessage("No connection");
             }
         }
 
@@ -421,20 +420,8 @@ namespace BdfToMsSQL
             }
             catch (Exception exc)
             {
-                WriteError(exc);
+                Logger.WriteError(exc);
             }
-        }
-
-        private void WriteError(Exception exc)
-        {
-            _form.Invoke(new MethodInvoker(() => { _listBoxValidateErrors.Items.Add($"Error: {exc.Message }\r\n {exc.InnerException?.ToString() ?? ""}"); }));
-        }
-
-
-
-        private void WriteMessage(string message)
-        {
-            _form.Invoke(new MethodInvoker(() => { _listBoxValidateErrors.Items.Add(message); }));
         }
 
         private bool CheckFields()
@@ -455,7 +442,7 @@ namespace BdfToMsSQL
                     SqlFields.Add(item.ToString());
                     if (!DbfFields.Contains(item.ToString()))
                     {
-                        WriteMessage($"dbf table {r.FileName} missing field: {item.ToString()}");
+                        Logger.WriteMessage($"dbf table {r.FileName} missing field: {item.ToString()}");
                         isErrors = true;
                     }
                 }
@@ -464,7 +451,7 @@ namespace BdfToMsSQL
                 {
                     if (!SqlFields.Contains(item))
                     {
-                        WriteMessage("SQL Table missing field: " + item);
+                        Logger.WriteMessage("SQL Table missing field: " + item);
                         isErrors = true;
                     }
                 });

@@ -9,26 +9,32 @@ namespace DbfToMsSQL
 {
     public partial class MainForm : Form
     {
-        private delegate void MethodInvoker();
-        public List<DbTaskUserControl> Tasks = new List<DbTaskUserControl>();
-        public int RowsCnt = 0;
-        public int TotalRows = 0;
+        public List<DbTaskUserControl> Tasks { get; set; } = new List<DbTaskUserControl>();
+        public int RowsCnt { get; set; } = 0;
+        public int TotalRows { get; set; } = 0;
         public void SetStatus(int totalRows)
         {
             TotalRows += totalRows;
-            InfoListBox.Items.Clear();
-            InfoListBox.Items.Add($"Loading...  {(TotalRows / (float)RowsCnt * 100).ToString("f2") }%");
+
+            Logger.Clear();
+            Logger.WriteMessage($"Loading...  {(TotalRows / (float)RowsCnt * 100).ToString("f2") }%");
         }
         public MainForm()
         {
             InitializeComponent();
+
+            Logger.Form = this;
+            Logger.ListBox = InfoListBox;
         }
 
         private void AddTaskToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            DbTaskUserControl dbTaskUserControl = new DbTaskUserControl(this);
+            DbTaskUserControl dbTaskUserControl = new DbTaskUserControl(this)
+            {
+                Dock = DockStyle.Top
+            };
+
             Tasks.Add(dbTaskUserControl);
-            dbTaskUserControl.Dock = DockStyle.Top;
             MainPanel.Controls.Add(dbTaskUserControl);
         }
 
@@ -78,13 +84,12 @@ namespace DbfToMsSQL
                         {
                             task.StartImport();
                         });
-
                     }
                     catch (Exception exc)
                     {
                         Invoke(() =>
                         {
-                            InfoListBox.Items.Add($"Error: {exc.Message }\r\n {exc.InnerException?.ToString() ?? ""}");
+                            Logger.WriteError(exc);
                         });
                     }
                     finally
@@ -101,7 +106,7 @@ namespace DbfToMsSQL
             }
             else
             {
-                InfoListBox.Items.Add("Can't start, there is an errors.");
+                Logger.WriteMessage("Can't start, there is an errors.");
             }
         }
 
