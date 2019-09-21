@@ -1,2 +1,2 @@
 ## DbfToMsSQL
-### Loads large dbf files into ms sql server database via SqlBulkCopy
+### App for loading large dbf files into ms sql server database via SqlBulkCopy
