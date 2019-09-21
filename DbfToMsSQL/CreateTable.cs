@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BdfToMsSQL.Loader;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
@@ -16,48 +18,55 @@ namespace BdfToMsSQL
         public CreateTable(DbTaskUserControl control)
         {
             this.control = control;
-            InitializeComponent();  
+            InitializeComponent();
 
             DBFReader r = control.Readers
-                .FirstOrDefault(a => StringComparer.Ordinal.Equals(a.TableName, control.SelectedDbfTable.Split('(').First().Trim() ))
+                .FirstOrDefault(a => StringComparer.Ordinal.Equals(a.TableName, control.SelectedDbfTable.Split('(').First().Trim()))
                 ?? control.Readers[0];
 
             s.Append($"use {control.DbNameTextBox.Text + Environment.NewLine}CREATE TABLE [dbo].[{Path.GetFileNameWithoutExtension(r.FileName)}] ({Environment.NewLine}");
 
             listItem = Path.GetFileNameWithoutExtension(r.FileName);
 
-            for (int i = 0; i < r.FieldCount; i++)
+            IEnumerable<string> fields = r.Fields.Select(field =>
             {
-                s.Append($"\t   [{r.FieldName[i]}] ");
+
+                StringBuilder fieldsBuilder = new StringBuilder();
+
+                fieldsBuilder.Append($"\t   [{field.Name}] ");
                 string sqlType = "";
-                switch (r.FieldType[i])
+                switch (field.Type)
                 {
-                    case "L": sqlType = "bit"; break;
-                    case "D": sqlType = "date"; break;
-                    case "N":
+                    case 'L': sqlType = "bit"; break;
+                    case 'D': sqlType = "date"; break;
+                    case 'N':
                         {
-                            if (r.FieldDigs[i] == 0)
+                            if (field.Digits == 0)
                             {
                                 sqlType = "int";
                             }
                             else
                             {
-                                sqlType = $"numeric({(int)r.FieldSize[i]},{(int)r.FieldDigs[i]})";
+                                sqlType = $"numeric({(int)field.Size},{(int)field.Digits})";
                             }
 
                             break;
                         }
-                    case "F": sqlType = "double"; break;
-                    default: sqlType = $"nvarchar({(int)r.FieldSize[i]})"; break;
+                    case 'F': sqlType = "double"; break;
+                    default: sqlType = $"nvarchar({(int)field.Size})"; break;
                 }
-                s.Append($"\t    { sqlType } null{ (i < r.FieldCount - 1 ? "," : "")}{ Environment.NewLine}");
-            }
+                fieldsBuilder.Append($"\t    { sqlType } null");
+
+                return fieldsBuilder.ToString();
+            });
+
+            s.Append(string.Join("," + Environment.NewLine, fields));
 
             s.Append(")");
             SQLTableTextBox.Text = s.ToString();
         }
 
-        private void RunButton_Click(object sender, EventArgs e)
+        private async void RunButton_Click(object sender, EventArgs e)
         {
             try
             {
@@ -69,8 +78,8 @@ namespace BdfToMsSQL
                         CommandText = SQLTableTextBox.Text
                     })
                     {
-                        connection.Open();
-                        using (SqlDataReader reader = sqlCommand.ExecuteReader())
+                        await connection.OpenAsync();
+                        using (SqlDataReader reader = await sqlCommand.ExecuteReaderAsync())
                         {
                             StatusLabel.Text = "Complete";
                         }
@@ -87,15 +96,15 @@ namespace BdfToMsSQL
                             CommandText = $"use [{control.DbNameTextBox.Text}] SELECT sobjects.name FROM sysobjects sobjects WHERE sobjects.xtype = 'U' order by name"
                         })
                         {
-                            connection.Open();
-                            using (SqlDataReader reader = sqlCommand.ExecuteReader())
+                            await connection.OpenAsync();
+                            using (SqlDataReader reader = await sqlCommand.ExecuteReaderAsync())
                             {
                                 control.TablesListbox.Items.Clear();
-                                while (reader.Read())
+                                while (await reader.ReadAsync())
                                 {
                                     control.TablesListbox.Items.Add(reader[0].ToString());
                                 }
-                                control.SqlConnect = true;
+                                control.SqlConnected = true;
                                 control.TablesListbox.SelectedItem = listItem;
                             }
                         }
@@ -103,7 +112,7 @@ namespace BdfToMsSQL
                 }
                 catch (Exception)
                 {
-                    control.SqlConnect = false;
+                    control.SqlConnected = false;
                 }
 
             }

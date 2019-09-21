@@ -32,6 +32,7 @@
         {
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.IntegratedSecurityCheckBox = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.TableFieldsListBox = new System.Windows.Forms.ListBox();
             this.label5 = new System.Windows.Forms.Label();
@@ -85,6 +86,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.IntegratedSecurityCheckBox);
             this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.TableFieldsListBox);
             this.groupBox1.Controls.Add(this.label5);
@@ -105,6 +107,17 @@
             this.groupBox1.TabIndex = 12;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "MS SQL Connection parameters";
+            // 
+            // IntegratedSecurityCheckBox
+            // 
+            this.IntegratedSecurityCheckBox.AutoSize = true;
+            this.IntegratedSecurityCheckBox.Location = new System.Drawing.Point(362, 117);
+            this.IntegratedSecurityCheckBox.Name = "IntegratedSecurityCheckBox";
+            this.IntegratedSecurityCheckBox.Size = new System.Drawing.Size(115, 17);
+            this.IntegratedSecurityCheckBox.TabIndex = 25;
+            this.IntegratedSecurityCheckBox.Text = "Integrated Security";
+            this.IntegratedSecurityCheckBox.UseVisualStyleBackColor = true;
+            this.IntegratedSecurityCheckBox.CheckedChanged += new System.EventHandler(this.IntegratedSecurityCheckBox_CheckedChanged);
             // 
             // label6
             // 
@@ -153,7 +166,6 @@
             this.UserNameTextBox.Name = "UserNameTextBox";
             this.UserNameTextBox.Size = new System.Drawing.Size(113, 20);
             this.UserNameTextBox.TabIndex = 19;
-            this.UserNameTextBox.Text = "sa";
             // 
             // PasswordTextBox
             // 
@@ -162,7 +174,6 @@
             this.PasswordTextBox.PasswordChar = '*';
             this.PasswordTextBox.Size = new System.Drawing.Size(113, 20);
             this.PasswordTextBox.TabIndex = 18;
-            this.PasswordTextBox.Text = "123123";
             // 
             // label4
             // 
@@ -188,7 +199,6 @@
             this.DbNameTextBox.Name = "DbNameTextBox";
             this.DbNameTextBox.Size = new System.Drawing.Size(313, 20);
             this.DbNameTextBox.TabIndex = 15;
-            this.DbNameTextBox.Text = "test";
             // 
             // label2
             // 
@@ -225,7 +235,6 @@
             this.SQLServerAdressTextBox.Name = "SQLServerAdressTextBox";
             this.SQLServerAdressTextBox.Size = new System.Drawing.Size(313, 20);
             this.SQLServerAdressTextBox.TabIndex = 11;
-            this.SQLServerAdressTextBox.Text = "localhost";
             // 
             // groupBox2
             // 
@@ -350,7 +359,7 @@
             this.BbfFieldsLabel.Location = new System.Drawing.Point(169, 113);
             this.BbfFieldsLabel.Name = "BbfFieldsLabel";
             this.BbfFieldsLabel.Size = new System.Drawing.Size(298, 67);
-            this.BbfFieldsLabel.TabIndex = 21;           
+            this.BbfFieldsLabel.TabIndex = 21;
             // 
             // OpenDbfButton
             // 
@@ -416,5 +425,6 @@
         public System.Windows.Forms.TextBox DbNameTextBox;
         private System.Windows.Forms.ComboBox EncodingComboBox;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.CheckBox IntegratedSecurityCheckBox;        
     }
 }

@@ -89,7 +89,6 @@
     <Compile Include="CreateTable.Designer.cs">
       <DependentUpon>CreateTable.cs</DependentUpon>
     </Compile>
-    <Compile Include="DBFReader.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -159,6 +158,12 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DbfToMsSQL.Loader\DbfToMsSQL.Loader.csproj">
+      <Project>{C959BE56-7970-4CE0-9047-ED8B9B1F87FE}</Project>
+      <Name>DbfToMsSQL.Loader</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

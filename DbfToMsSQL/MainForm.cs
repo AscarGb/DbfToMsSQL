@@ -36,9 +36,11 @@ namespace DbfToMsSQL
 
             Tasks.Add(dbTaskUserControl);
             MainPanel.Controls.Add(dbTaskUserControl);
+
+            MainPanel.ScrollControlIntoView(dbTaskUserControl);
         }
 
-        private void StartToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void StartToolStripMenuItem_Click(object sender, EventArgs e)
         {
             TotalRows = 0;
             bool is_errors = false;
@@ -46,7 +48,7 @@ namespace DbfToMsSQL
             {
                 t.Readers?.ForEach(r =>
                 {
-                    List<string> dbfFields = r.FieldName.ToList();
+                    List<string> dbfFields = r.Fields.Select(a => a.Name).ToList();
                     List<string> sqlFields = new List<string>();
 
                     foreach (object item in t.TableFieldsListBox.Items)
@@ -69,40 +71,24 @@ namespace DbfToMsSQL
 
             if (!is_errors)
             {
-                Task.Run(() =>
+                MainPanel.Enabled =
+                AddTaskToolStripMenuItem.Enabled =
+                StartToolStripMenuItem.Enabled = false;
+
+                try
                 {
-                    Invoke(() =>
-                    {
-                        MainPanel.Enabled =
-                        AddTaskToolStripMenuItem.Enabled =
-                        StartToolStripMenuItem.Enabled = false;
-                    });
-
-                    try
-                    {
-                        Tasks.ForEach(task =>
-                        {
-                            task.StartImport();
-                        });
-                    }
-                    catch (Exception exc)
-                    {
-                        Invoke(() =>
-                        {
-                            Logger.WriteError(exc);
-                        });
-                    }
-                    finally
-                    {
-                        Invoke(() =>
-                        {
-                            MainPanel.Enabled =
-                            AddTaskToolStripMenuItem.Enabled =
-                                StartToolStripMenuItem.Enabled = true;
-                        });
-                    }
-
-                });
+                    await Task.WhenAll(Tasks.Select(t => t.StartImport()));
+                }
+                catch (Exception exc)
+                {
+                    Logger.WriteError(exc);
+                }
+                finally
+                {
+                    MainPanel.Enabled =
+                    AddTaskToolStripMenuItem.Enabled =
+                        StartToolStripMenuItem.Enabled = true;
+                }
             }
             else
             {
