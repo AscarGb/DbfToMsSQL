@@ -41,8 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DBFInfo.cs" />
     <Compile Include="DBFReader.cs" />
+    <Compile Include="NamedDBFReader.cs" />
     <Compile Include="Field.cs" />
+    <Compile Include="IndexException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

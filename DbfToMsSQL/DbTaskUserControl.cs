@@ -1,12 +1,12 @@
 ﻿using BdfToMsSQL.Loader;
 using DbfToMsSQL;
+using DbfToMsSQL.Loader;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
-using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -38,7 +38,7 @@ namespace BdfToMsSQL
                 }
             }
         }
-        public List<DBFReader> Readers { get; set; }
+        public List<DBFInfo> Readers { get; } = new List<DBFInfo>();
         public string SelectedDbfTable { get; set; } = "";
 
         private bool _sqlConnect = false;
@@ -90,23 +90,39 @@ namespace BdfToMsSQL
             {
                 using (SqlConnection connection = new SqlConnection(ConnestionString))
                 {
-                    using (SqlCommand sqlCommand = new SqlCommand("", connection)
-                    {
-                        CommandType = CommandType.Text,
-                        CommandText = $"use [{DbNameTextBox.Text}] SELECT sobjects.name FROM sysobjects sobjects WHERE sobjects.xtype = 'U' order by name"
-                    })
+                    using (SqlCommand sqlCommand = new SqlCommand(
+                        $@"use [{DbNameTextBox.Text}] SELECT sobjects.name, c.name FROM sysobjects sobjects 
+                           join SYS .OBJECTS AS T
+                           ON t.type = 'U' and T.name = sobjects.name
+                           JOIN SYS .COLUMNS AS C
+                           ON T. OBJECT_ID=C .OBJECT_ID
+                           WHERE sobjects.xtype = 'U' order by sobjects.name", connection))
                     {
                         await connection.OpenAsync();
 
                         using (SqlDataReader reader = await sqlCommand.ExecuteReaderAsync())
                         {
-                            TablesListbox.Items.Clear();
+                            DbTablesTreeView.Nodes.Clear();
+
+                            List<TableField> tbList = new List<TableField>();
 
                             while (await reader.ReadAsync())
                             {
-                                string tmpReader = reader[0].ToString();
+                                tbList.Add(new TableField
+                                {
+                                    Table = reader[0].ToString(),
+                                    Field = reader[1].ToString()
+                                });
+                            }
 
-                                TablesListbox.Items.Add(tmpReader);
+                            foreach (IGrouping<string, TableField> tbg in tbList.GroupBy(a => a.Table))
+                            {
+                                TreeNode tnode = DbTablesTreeView.Nodes.Add(tbg.Key);
+
+                                foreach (TableField f in tbg)
+                                {
+                                    tnode.Nodes.Add(f.Field);
+                                }
                             }
 
                             SqlConnected = true;
@@ -122,7 +138,10 @@ namespace BdfToMsSQL
             }
             finally
             {
-                ConnectToSqlButton.Enabled = true;
+                Invoke(() =>
+                {
+                    ConnectToSqlButton.Enabled = true;
+                });
             }
         }
 
@@ -131,87 +150,10 @@ namespace BdfToMsSQL
             Invoke(new MethodInvoker(p));
         }
 
-        private async void TablesListbox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            TablesListbox.Enabled = false;
 
-            try
-            {
-                if (string.IsNullOrEmpty(ConnestionString.Trim()))
-                {
-                    return;
-                }
-
-                string item = TablesListbox.SelectedItem.ToString();
-
-                using (SqlConnection connection = new SqlConnection(ConnestionString))
-                {
-                    using (SqlCommand sqlCommand = new SqlCommand("", connection)
-                    {
-                        CommandType = CommandType.Text,
-                        CommandText = $@"use [{DbNameTextBox.Text}]
-                                       select c.name
-                                       FROM SYS .OBJECTS AS T
-                                       JOIN SYS .COLUMNS AS C
-                                       ON T. OBJECT_ID=C .OBJECT_ID
-                                       WHERE t.type = 'U' and T.name = '{item}'"
-                    })
-                    {
-                        await connection.OpenAsync();
-                        using (SqlDataReader reader = await sqlCommand.ExecuteReaderAsync())
-                        {
-
-                            TableFieldsListBox.Items.Clear();
-
-                            FieldIndex.Clear();
-                            int i = 0;
-                            while (await reader.ReadAsync())
-                            {
-                                TableFieldsListBox.Items.Add(reader[0].ToString());
-
-                                FieldIndex.Add(i, reader[0].ToString());
-                                i++;
-                            }
-
-                            SqlSelectedTab = true;
-                            if (DbfOpen)
-                            {
-                                CheckFields();
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception exc)
-            {
-                Logger.WriteError(exc);
-                SqlSelectedTab = false;
-            }
-            finally
-            {
-                Invoke(() =>
-                {
-                    TablesListbox.Enabled = true;
-                });
-            }
-        }
 
         private void BtnOpenDbf_Click(object sender, EventArgs e)
         {
-            if (Readers != null && Readers.Count() > 0)
-            {
-                Readers.ForEach(r =>
-                {
-                    try
-                    {
-                        r?.Dispose();
-                    }
-                    catch { }
-                });
-            }
-
-            Readers = new List<DBFReader>();
-
             openFileDialog1.InitialDirectory = last_open_dir;
             openFileDialog1.Filter = "dbf (*.dbf)|*.dbf";
             openFileDialog1.FilterIndex = 2;
@@ -222,81 +164,29 @@ namespace BdfToMsSQL
             {
                 if (openFileDialog1.ShowDialog() == DialogResult.OK)
                 {
-                    bool IsErrors = false;
-
-                    DbfFilesListBox.Items.Clear();
-
                     string[] fileList = openFileDialog1.FileNames;
+
+                    DbfFilesTreeView.Nodes.Clear();
 
                     fileList.ToList().ForEach(f =>
                     {
-                        string fileName = Path.GetFileName(f);
+                        string fileName = Path.GetFileNameWithoutExtension(f);
 
-                        DBFReader bulkReader = new DBFReader(f, FieldIndex, int.Parse(EncodingComboBox.Text), fileName);
-                        Readers.Add(bulkReader);
+                        DBFInfo dBFInfo = new DBFInfo(f);
 
-                        bulkReader.OnLoad += BulkReader_OnLoad;
+                        Readers.Add(dBFInfo);
 
                         last_open_dir = Path.GetDirectoryName(f);
 
-                        DbfFilesListBox.Items.Add($"{fileName} ( Fields count:{bulkReader.Fields.Count()} Rows count: {bulkReader.RowsCount} )");
+                        TreeNode node = DbfFilesTreeView.Nodes.Add($"{fileName} ( Fields count:{dBFInfo.Fields.Count()} Rows count: {dBFInfo.RowsCount} )");
 
-                        try
+                        foreach (Field field in dBFInfo.Fields)
                         {
-                            if (SqlConnected && SqlSelectedTab)
-                            {
-                                List<string> dbfFields = bulkReader.Fields.Select(a => a.Name).ToList();
-                                List<string> sqlFields = new List<string>();
-
-                                foreach (object item in TableFieldsListBox.Items)
-                                {
-                                    sqlFields.Add(item.ToString());
-                                    if (!dbfFields.Contains(item.ToString()))
-                                    {
-                                        Logger.WriteMessage($"dbf table {f} missing field: {item.ToString()}");
-                                        IsErrors = true;
-                                    }
-                                }
-                                dbfFields.ForEach(item =>
-                                {
-                                    if (!sqlFields.Contains(item))
-                                    {
-                                        Logger.WriteMessage("SQL Table missing field: " + item);
-                                        IsErrors = true;
-                                    }
-                                });
-                            }
-                            else
-                            {
-
-                            }
-
+                            node.Nodes.Add(field.Name);
                         }
-                        catch (Exception exc)
-                        {
-                            Logger.WriteError(exc);
-                        }
-
                     });
 
                     RecalculateRowCount();
-
-                    ShowDbfTableFields();
-
-                    if (SqlConnected && SqlSelectedTab)
-                    {
-                        if (!IsErrors)
-                        {
-
-                            ValidationLabel.Text = "Validation passed.";
-                            ValidationLabel.ForeColor = Color.Green;
-                        }
-                        else
-                        {
-                            ValidationLabel.Text = "Field do not coincide!";
-                            ValidationLabel.ForeColor = Color.Red;
-                        }
-                    }
                 }
                 DbfOpen = true;
             }
@@ -313,49 +203,49 @@ namespace BdfToMsSQL
 
         private void BulkReader_OnLoad(int total)
         {
-           _form.TotalRows += total;
+            _form.TotalRows += total;
 
             Logger.Clear();
             Logger.WriteMessage($"Loading...  {(_form.TotalRows / (float)_form.RowsCnt * 100).ToString("f2") }%");
-        }
-
-        private void ShowDbfTableFields()
-        {
-            if (Readers.Count() > 0)
-            {
-                BbfFieldsLabel.Items.Clear();
-                RowsCnt = Readers.Sum(a => a.RowsCount);
-                DbfCountLabel.Text = RowsCnt.ToString();
-
-                DBFReader r = Readers
-                    .FirstOrDefault(a => StringComparer.Ordinal.Equals(a.TableName, SelectedDbfTable.Split('(').First().Trim()))
-                    ?? Readers[0];
-
-                foreach (DbfToMsSQL.Loader.Field f in r.Fields)
-                {
-                    BbfFieldsLabel.Items.Add(f.Name);
-                }
-            }
         }
 
         public async Task StartImport()
         {
             if (Readers != null)
             {
-                await Task.WhenAll(
-                    Readers.Select(async r =>
+                if (AutoCreateCheckBox.Checked)
+                {
+                    StringBuilder s = new StringBuilder();
+
+                    string dbName = DbNameTextBox.Text;
+
+                    Readers.ForEach(r =>
                     {
-                        _form.CurrentFileLabel.Text = r.FileName;
+                        s.Append(SQLHelper.CreateTableSQL(r, dbName));
+                    });
+
+                    await SQLHelper.CreateTable(s.ToString(), ConnestionString);
+                }
+
+                using (SqlConnection connection = new SqlConnection(ConnestionString))
+                {
+                    await connection.OpenAsync();
+
+                    foreach (DBFInfo r in Readers)
+                    {
+                        _form.CurrentFileLabel.Text = r.TableName;
 
                         try
                         {
-                            using (r)
+                            using (DBFReader reader = new DBFReader(r.FileName, int.Parse(EncodingComboBox.Text), r.TableName))
                             {
-                                using (SqlBulkCopy loader = new SqlBulkCopy(ConnestionString, SqlBulkCopyOptions.Default))
+                                reader.OnLoad += BulkReader_OnLoad;
+
+                                using (SqlBulkCopy loader = new SqlBulkCopy(connection))
                                 {
-                                    loader.DestinationTableName = TablesListbox.SelectedItem.ToString();
+                                    loader.DestinationTableName = r.TableName;
                                     loader.BulkCopyTimeout = int.MaxValue;
-                                    await loader.WriteToServerAsync(r);
+                                    await loader.WriteToServerAsync(reader);
                                 }
                             }
                         }
@@ -363,7 +253,9 @@ namespace BdfToMsSQL
                         {
                             Logger.WriteError(exc);
                         }
-                    }));
+                    };
+                }
+
             }
             else
             {
@@ -371,23 +263,17 @@ namespace BdfToMsSQL
             }
         }
 
-        public string GetSelectedTable()
-        {
-            return TablesListbox.SelectedItem.ToString();
-        }
-
         private void RemoveTaskButton_Click(object sender, EventArgs e)
         {
             _form.Tasks.Remove(this);
             RecalculateRowCount();
-            _form.MainPanel.Controls.Remove(this);
-
-            Readers?.ForEach(a => a?.Dispose());
+            _form.TaskTabControl.TabPages.Remove(_form.TaskTabControl.SelectedTab);
         }
 
         private void RecalculateRowCount()
         {
             _form.RowsCnt = 0;
+            _form.TotalRows = 0;
             _form.Tasks.ForEach(t =>
             {
                 if (t.Readers != null)
@@ -399,65 +285,11 @@ namespace BdfToMsSQL
             try
             {
                 _form.TotalRowsLabel.Text = _form.RowsCnt.ToString();
-
             }
             catch (Exception exc)
             {
                 Logger.WriteError(exc);
             }
-        }
-
-        private bool CheckFields()
-        {
-            if (Readers == null)
-            {
-                return false;
-            }
-
-            bool isErrors = false;
-            Readers.ForEach(r =>
-            {
-                List<string> DbfFields = r.Fields.Select(a => a.Name).ToList();
-                List<string> SqlFields = new List<string>();
-
-                foreach (object item in TableFieldsListBox.Items)
-                {
-                    SqlFields.Add(item.ToString());
-                    if (!DbfFields.Contains(item.ToString()))
-                    {
-                        Logger.WriteMessage($"dbf table {r.FileName} missing field: {item.ToString()}");
-                        isErrors = true;
-                    }
-                }
-
-                DbfFields.ForEach(item =>
-                {
-                    if (!SqlFields.Contains(item))
-                    {
-                        Logger.WriteMessage("SQL Table missing field: " + item);
-                        isErrors = true;
-                    }
-                });
-            });
-
-            if (!isErrors)
-            {
-                Invoke(() =>
-                {
-                    ValidationLabel.Text = "Validation passed.";
-                    ValidationLabel.ForeColor = Color.Green;
-                });
-            }
-            else
-            {
-                Invoke(() =>
-                {
-                    ValidationLabel.Text = "Field do not coincide!";
-                    ValidationLabel.ForeColor = Color.Red;
-                });
-            }
-
-            return isErrors;
         }
 
         private void CreateSQLTableButton_Click(object sender, EventArgs e)
@@ -467,12 +299,6 @@ namespace BdfToMsSQL
                 StartPosition = FormStartPosition.CenterParent
             };
             t.ShowDialog();
-        }
-
-        private void DbfFilesListBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            SelectedDbfTable = DbfFilesListBox.Text;
-            ShowDbfTableFields();
         }
 
         private void IntegratedSecurityCheckBox_CheckedChanged(object sender, EventArgs e)

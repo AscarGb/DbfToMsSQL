@@ -1,5 +1,6 @@
 ﻿using DbfToMsSQL.Loader;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.IO;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace BdfToMsSQL.Loader
 {
-    public class DBFReader : IDataReader
+    public class NamedDBFReader : IDataReader
     {
         public int FieldCount { get; }
         public event Action<int> OnLoad;
@@ -110,8 +111,9 @@ namespace BdfToMsSQL.Loader
             return _fieldValues[i];
         }
 
-        public DBFReader(
+        public NamedDBFReader(
             string FileName,
+            string[] FieldsSelection,
             int encoding,
             string TableName)
         {
@@ -119,6 +121,12 @@ namespace BdfToMsSQL.Loader
 
             try
             {
+                Dictionary<string, int> NameIndex = new Dictionary<string, int>(FieldsSelection.Length);
+                for (int i = 0; i < FieldsSelection.Length; i++)
+                {
+                    NameIndex.Add(FieldsSelection[i], i);
+                }
+
                 _cultureInfo = new CultureInfo("en-US", false);
                 _dateTimeFormat = _cultureInfo.DateTimeFormat;
                 _numberFormat = _cultureInfo.NumberFormat;
@@ -156,14 +164,16 @@ namespace BdfToMsSQL.Loader
                     byte size = _buffer[i * 32 + 16];
                     byte digs = _buffer[i * 32 + 17];
 
-                    _fields[i] = new Field(name, type, size, digs, i);
+                    if (NameIndex.TryGetValue(name, out int value))
+                    {
+                        _fields[i] = new Field(name, type, size, digs, value);
+                    }
 
                     _fieldsLength += size;
                 }
                 _fileStream.ReadByte(); // Пропускаю разделитель схемы и данных              
 
-                _fieldValues = new object[_fields.Length];
-
+                _fieldValues = new string[FieldsSelection.Length];
                 _buffer = new byte[_fieldsLength];
             }
             catch (Exception)

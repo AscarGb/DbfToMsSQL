@@ -104,6 +104,8 @@
     <Compile Include="DbTaskUserControl.Designer.cs">
       <DependentUpon>DbTaskUserControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="SQLHelper.cs" />
+    <Compile Include="TableField.cs" />
     <EmbeddedResource Include="CreateTable.resx">
       <DependentUpon>CreateTable.cs</DependentUpon>
     </EmbeddedResource>

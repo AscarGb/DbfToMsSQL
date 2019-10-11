@@ -34,12 +34,12 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.AddTaskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.StartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.MainPanel = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.CurrentFileLabel = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.TotalRowsLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.TaskTabControl = new System.Windows.Forms.TabControl();
             this.menuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -75,28 +75,19 @@
             this.menuStrip1.TabIndex = 28;
             this.menuStrip1.Text = "menuStrip1";
             // 
-            // addTaskToolStripMenuItem
+            // AddTaskToolStripMenuItem
             // 
-            this.AddTaskToolStripMenuItem.Name = "addTaskToolStripMenuItem";
+            this.AddTaskToolStripMenuItem.Name = "AddTaskToolStripMenuItem";
             this.AddTaskToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.AddTaskToolStripMenuItem.Text = "Add task";
             this.AddTaskToolStripMenuItem.Click += new System.EventHandler(this.AddTaskToolStripMenuItem_Click);
             // 
-            // startToolStripMenuItem
+            // StartToolStripMenuItem
             // 
-            this.StartToolStripMenuItem.Name = "startToolStripMenuItem";
+            this.StartToolStripMenuItem.Name = "StartToolStripMenuItem";
             this.StartToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.StartToolStripMenuItem.Text = "Start";
             this.StartToolStripMenuItem.Click += new System.EventHandler(this.StartToolStripMenuItem_Click);
-            // 
-            // MainPanel
-            // 
-            this.MainPanel.AutoScroll = true;
-            this.MainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MainPanel.Location = new System.Drawing.Point(0, 24);
-            this.MainPanel.Name = "MainPanel";
-            this.MainPanel.Size = new System.Drawing.Size(1133, 456);
-            this.MainPanel.TabIndex = 29;
             // 
             // panel2
             // 
@@ -146,19 +137,28 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "Total rows:";
             // 
+            // TaskTabControl
+            // 
+            this.TaskTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TaskTabControl.Location = new System.Drawing.Point(0, 24);
+            this.TaskTabControl.Name = "TaskTabControl";
+            this.TaskTabControl.SelectedIndex = 0;
+            this.TaskTabControl.Size = new System.Drawing.Size(1133, 456);
+            this.TaskTabControl.TabIndex = 31;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1133, 616);
-            this.Controls.Add(this.MainPanel);
+            this.Controls.Add(this.TaskTabControl);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.splitter1);
             this.Controls.Add(this.InfoListBox);
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
-            this.Text = "DBF To MsSQL";          
+            this.Text = "DBF To MsSQL";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.panel2.ResumeLayout(false);
@@ -173,7 +173,6 @@
         private System.Windows.Forms.Splitter splitter1;
         public System.Windows.Forms.ListBox InfoListBox;
         private System.Windows.Forms.MenuStrip menuStrip1;
-        public System.Windows.Forms.Panel MainPanel;
         public System.Windows.Forms.ToolStripMenuItem AddTaskToolStripMenuItem;
         public System.Windows.Forms.ToolStripMenuItem StartToolStripMenuItem;
         private System.Windows.Forms.Panel panel2;
@@ -181,7 +180,7 @@
         private System.Windows.Forms.Label label1;
         public System.Windows.Forms.Label CurrentFileLabel;
         public System.Windows.Forms.Label TotalRowsLabel;
-
+        public System.Windows.Forms.TabControl TaskTabControl;
     }
 }
 

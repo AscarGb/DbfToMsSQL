@@ -31,47 +31,26 @@ namespace DbfToMsSQL
         {
             DbTaskUserControl dbTaskUserControl = new DbTaskUserControl(this)
             {
-                Dock = DockStyle.Top
-            };
+                Dock = DockStyle.Fill
+            };          
 
             Tasks.Add(dbTaskUserControl);
-            MainPanel.Controls.Add(dbTaskUserControl);
 
-            MainPanel.ScrollControlIntoView(dbTaskUserControl);
+            var page = new TabPage($"Task {(TaskTabControl.TabCount + 1).ToString()}");
+
+            page.Controls.Add(dbTaskUserControl);
+
+            TaskTabControl.TabPages.Add(page);
         }
 
         private async void StartToolStripMenuItem_Click(object sender, EventArgs e)
         {
             TotalRows = 0;
             bool is_errors = false;
-            Tasks.ForEach(t =>
-            {
-                t.Readers?.ForEach(r =>
-                {
-                    List<string> dbfFields = r.Fields.Select(a => a.Name).ToList();
-                    List<string> sqlFields = new List<string>();
-
-                    foreach (object item in t.TableFieldsListBox.Items)
-                    {
-                        sqlFields.Add(item.ToString());
-                        if (!dbfFields.Contains(item.ToString()))
-                        {
-                            is_errors = true;
-                        }
-                    }
-                    dbfFields.ForEach(item =>
-                    {
-                        if (!sqlFields.Contains(item))
-                        {
-                            is_errors = true;
-                        }
-                    });
-                });
-            });
 
             if (!is_errors)
             {
-                MainPanel.Enabled =
+                TaskTabControl.Enabled =
                 AddTaskToolStripMenuItem.Enabled =
                 StartToolStripMenuItem.Enabled = false;
 
@@ -85,7 +64,7 @@ namespace DbfToMsSQL
                 }
                 finally
                 {
-                    MainPanel.Enabled =
+                    TaskTabControl.Enabled =
                     AddTaskToolStripMenuItem.Enabled =
                         StartToolStripMenuItem.Enabled = true;
                 }
