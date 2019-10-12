@@ -42,12 +42,17 @@ namespace BdfToMsSQL.Loader
 
             _fileStream.ReadByte(); // Пропускаю стартовый байт элемента данных
             _fileStream.Read(_buffer, 0, _buffer.Length);
+
             int Index = 0;
             object value;
+            Field field;
+            string dbfValue;
 
-            foreach (Field field in _fields)
+            for (int i = 0; i < _fields.Length; i++)
             {
-                string dbfValue = _encoding.GetString(_buffer, Index, field.Size)
+                field = _fields[i];
+
+                dbfValue = _encoding.GetString(_buffer, Index, field.Size)
                     .TrimEnd((char)0x00, (char)0x20);
 
                 Index += field.Size;
@@ -91,7 +96,7 @@ namespace BdfToMsSQL.Loader
                     value = DBNull.Value;
                 }
 
-                _fieldValues[field.Index] = value;
+                _fieldValues[i] = value;
             }
 
             _readedRow++;
@@ -156,7 +161,7 @@ namespace BdfToMsSQL.Loader
                     byte size = _buffer[i * 32 + 16];
                     byte digs = _buffer[i * 32 + 17];
 
-                    _fields[i] = new Field(name, type, size, digs, i);
+                    _fields[i] = new Field(name, type, size, digs);
 
                     _fieldsLength += size;
                 }
@@ -166,10 +171,10 @@ namespace BdfToMsSQL.Loader
 
                 _buffer = new byte[_fieldsLength];
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 Dispose();
-                throw;
+                throw new CreateReaderException("Dbf reader creation failed", e);
             }
         }
 

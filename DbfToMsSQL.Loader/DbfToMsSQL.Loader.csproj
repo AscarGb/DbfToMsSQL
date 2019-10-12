@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CreateReaderException.cs" />
     <Compile Include="DBFInfo.cs" />
     <Compile Include="DBFReader.cs" />
     <Compile Include="NamedDBFReader.cs" />
