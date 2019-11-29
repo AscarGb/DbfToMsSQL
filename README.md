@@ -1,5 +1,6 @@
 ### DbfToMsSQL
 App for loading large dbf files into ms sql server database via SqlBulkCopy
+https://github.com/AscarGb/DbfToMsSQL/releases
 
 ### DbfToMsSQL.Loader
 Only library
