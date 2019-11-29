@@ -4,10 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbfToMsSQL", "DbfToMsSQL\DbfToMsSQL.csproj", "{892E8CF6-E34C-4C4C-8E88-14CAEAD67479}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EE9D5202-AEF1-4533-9C8E-78062D5294FE} = {EE9D5202-AEF1-4533-9C8E-78062D5294FE}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{E03FCC84-25A1-4B62-B4F7-18ED51204D60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbfToMsSQL.Loader", "DbfToMsSQL.Loader\DbfToMsSQL.Loader.csproj", "{C959BE56-7970-4CE0-9047-ED8B9B1F87FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbfToMsSQL.Loader", "DbfToMsSQL.Loader\DbfToMsSQL.Loader.csproj", "{EE9D5202-AEF1-4533-9C8E-78062D5294FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +22,10 @@ Global
 		{892E8CF6-E34C-4C4C-8E88-14CAEAD67479}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{892E8CF6-E34C-4C4C-8E88-14CAEAD67479}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{892E8CF6-E34C-4C4C-8E88-14CAEAD67479}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C959BE56-7970-4CE0-9047-ED8B9B1F87FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C959BE56-7970-4CE0-9047-ED8B9B1F87FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C959BE56-7970-4CE0-9047-ED8B9B1F87FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C959BE56-7970-4CE0-9047-ED8B9B1F87FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE9D5202-AEF1-4533-9C8E-78062D5294FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE9D5202-AEF1-4533-9C8E-78062D5294FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE9D5202-AEF1-4533-9C8E-78062D5294FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE9D5202-AEF1-4533-9C8E-78062D5294FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

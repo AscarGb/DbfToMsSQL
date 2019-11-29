@@ -163,7 +163,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DbfToMsSQL.Loader\DbfToMsSQL.Loader.csproj">
-      <Project>{C959BE56-7970-4CE0-9047-ED8B9B1F87FE}</Project>
+      <Project>{ee9d5202-aef1-4533-9c8e-78062d5294fe}</Project>
       <Name>DbfToMsSQL.Loader</Name>
     </ProjectReference>
   </ItemGroup>
