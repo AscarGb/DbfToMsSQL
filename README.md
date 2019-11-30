@@ -18,7 +18,7 @@ using (SqlConnection connection = new SqlConnection(ConnestionString))
     reader.OnLoad += BulkReader_OnLoad;
     using (SqlBulkCopy loader = new SqlBulkCopy(connection))
     {
-      loader.DestinationTableName = r.TableName;
+      loader.DestinationTableName = "TableName";
       loader.BulkCopyTimeout = int.MaxValue;
       await loader.WriteToServerAsync(reader);
     }
